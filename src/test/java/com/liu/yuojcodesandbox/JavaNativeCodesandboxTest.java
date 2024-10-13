@@ -1,8 +1,8 @@
 package com.liu.yuojcodesandbox;
 
 import cn.hutool.core.io.resource.ResourceUtil;
-import com.liu.yuojcodesandbox.core.CodeSandboxFactory;
-import com.liu.yuojcodesandbox.core.CodeSandboxTemplate;
+import com.liu.yuojcodesandbox.core.java.CodeSandboxFactory;
+import com.liu.yuojcodesandbox.core.java.CodeSandboxTemplate;
 import com.liu.yuojcodesandbox.model.ExecuteCodeRequest;
 import com.liu.yuojcodesandbox.model.ExecuteCodeResponse;
 import org.junit.jupiter.api.Test;

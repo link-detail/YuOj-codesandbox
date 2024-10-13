@@ -1,4 +1,4 @@
-package com.liu.yuojcodesandbox.core;
+package com.liu.yuojcodesandbox.core.java;
 
 import com.liu.yuojcodesandbox.model.enums.QuestionSubmitLanguageEnum;
 

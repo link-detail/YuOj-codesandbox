@@ -1,7 +1,6 @@
 package com.liu.yuojcodesandbox.model.enums;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.liu.yuojcodesandbox.model.JudgeInfo;
 import lombok.Getter;
 
 import java.util.Arrays;
