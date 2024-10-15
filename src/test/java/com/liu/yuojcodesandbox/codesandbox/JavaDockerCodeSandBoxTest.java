@@ -1,4 +1,4 @@
-package com.liu.yuojcodesandbox;
+package com.liu.yuojcodesandbox.codesandbox;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.liu.yuojcodesandbox.core.CodeSandbox;
@@ -28,7 +28,7 @@ public class JavaDockerCodeSandBoxTest {
 
     @Test
     void testExecuteCode(){
-        String code= ResourceUtil.readStr ("testcode/core/Main.java", StandardCharsets.UTF_8);
+        String code= ResourceUtil.readStr ("testcode/core/Main2.java", StandardCharsets.UTF_8);
         ExecuteCodeRequest codeRequest = ExecuteCodeRequest.builder ()
                 .code (code)
                 .language (QuestionSubmitLanguageEnum.JAVA)

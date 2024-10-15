@@ -1,4 +1,4 @@
-package com.liu.yuojcodesandbox;
+package com.liu.yuojcodesandbox.codesandbox;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import com.liu.yuojcodesandbox.core.java.CodeSandboxFactory;

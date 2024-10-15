@@ -14,9 +14,18 @@ import java.util.List;
 @AllArgsConstructor
 public class ExecuteCodeRequest {
 
+    /**
+     * 输入用例
+     */
     private List<String> inputList;
 
+    /**
+     * 提交代码
+     */
     private String code;
 
+    /**
+     * 提交语言
+     */
     private QuestionSubmitLanguageEnum language;
 }

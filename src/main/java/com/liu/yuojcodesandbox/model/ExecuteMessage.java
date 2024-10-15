@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ExecuteMessage {
 
-    //进程信息码
+    //信息码
     private Integer exitValue;
 
     //正常信息

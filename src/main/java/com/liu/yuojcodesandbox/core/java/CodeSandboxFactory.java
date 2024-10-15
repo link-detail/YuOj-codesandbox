@@ -10,11 +10,12 @@ import com.liu.yuojcodesandbox.model.enums.QuestionSubmitLanguageEnum;
  *
  */
 public class CodeSandboxFactory {
+
     public static CodeSandboxTemplate getInstance(QuestionSubmitLanguageEnum language){
         /**
-         * 版本升级新写法
+         * 版本升级新写法(JDK14+才可以这么使用)
          * return switch (language){
-                       case JAVA : new JavaNativeCodeSandbox();
+                       case JAVA -> new JavaNativeCodeSandbox();
                        case PYTHON -> throw new RuntimeException("正在更新");
                        default -> throw new RuntimeException("暂不支持");
                    };

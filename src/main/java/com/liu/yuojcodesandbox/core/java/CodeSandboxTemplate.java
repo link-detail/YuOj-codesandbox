@@ -18,24 +18,27 @@ import java.util.*;
 /**
  * @author 刘渠好
  * @since 2024/8/11 下午9:30
- * 代码沙箱模板
+ * java原生代码沙箱模板
  */
 @Slf4j
 public abstract class CodeSandboxTemplate implements CodeSandbox {
 
     //存放路径前缀 /java
     String prefix;
+
     //代码存放路径 /tempCode
     String globalCodePath;
-    //统一类名 /Main1.java
+
+    //统一类名 /Main.java
     String globalCodeFileName;
 
 
     //限制执行时间
-    public static final Long TIME_OUT = 10000L;  //10s
+    public static final Long TIME_OUT = 5000L;  //5s
 
     //保存代码方法
     public File saveCodeFile(String code) {
+        //获取当前目录位置
         String userPath = System.getProperty("user.dir");
         //tempCode文件夹存储代码
         String userParentPath = userPath + globalCodePath;
@@ -112,10 +115,11 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
     //原生代码沙箱执行代码
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        //输入用例和代码
         List<String> inputList = executeCodeRequest.getInputList();
         String code = executeCodeRequest.getCode();
 
-        //1.保存代码
+        //1.存放代码
         File codeFile = saveCodeFile(code);
         String userCodePath = codeFile.getAbsolutePath();  //代码位置
         String userParentPath = codeFile.getParentFile().getAbsolutePath();// 每一个编译运行代码的位置
@@ -136,13 +140,14 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
                         .build();
             }
         } catch (IOException e) {
-            //这里是确保删除成功，可能上面没删除
+            //为了防止try块中出现异常，未删除成功，这是一种良好的编程实践
             FileUtil.del(userParentPath);
             return getErrorResponse(e);
         }
 
         //3.运行代码及其整理输出结果
         try {
+            //运行结果
             List<ExecuteMessage> executeMessages = runCode(inputList, runCmd);
             //返回处理结果
             ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
@@ -157,8 +162,9 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
             for (ExecuteMessage executeMessage : executeMessages) {
                 if (ObjectUtil.equal(0, executeMessage.getExitValue())) {
                     outputList.add(executeMessage.getMessage());
-                    //超时
-                } else if (ObjectUtil.equal(-10001, executeMessage.getExitValue())) {
+
+                } //超时
+                else if (ObjectUtil.equal(-10001, executeMessage.getExitValue())) {
                     executeCodeResponse.setMessage(executeMessage.getErrorMessage());
                     executeCodeResponse.setResultType(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED);
                     JudgeInfo timeJudgeInfo = new JudgeInfo();

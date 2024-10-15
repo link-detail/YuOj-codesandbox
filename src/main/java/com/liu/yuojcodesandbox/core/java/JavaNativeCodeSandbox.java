@@ -14,7 +14,7 @@ public class JavaNativeCodeSandbox extends CodeSandboxTemplate {
 
     String globalCodePath=File.separator+"tempCode";
 
-    String globalCodeFileName=File.separator+"Main1.java";
+    String globalCodeFileName=File.separator+"Main.java";
 
     public JavaNativeCodeSandbox(){
         super.prefix=prefix;

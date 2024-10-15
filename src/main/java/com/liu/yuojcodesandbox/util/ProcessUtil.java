@@ -27,6 +27,7 @@ public class ProcessUtil {
         StringBuilder outPut=new StringBuilder();
 
         try {
+            //信息码
              exitValue = process.waitFor();
             //正常运行
             if (exitValue==0){

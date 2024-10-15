@@ -48,7 +48,7 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
     public static final String GLOBAL_CODE_DIR_PATH=File.separator+"tempCode";
 
     //统一类名
-    public static final String GLOBAL_JAVA_CLASS_NAME=File.separator+"Main.java";
+    public static final String GLOBAL_JAVA_CLASS_NAME=File.separator+"Main2.java";
 
     //超时时间 S
     public static final long TIME_OUT=5L;
