@@ -1,6 +1,7 @@
 package com.liu.yuojcodesandbox.codesandbox;
 
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.json.JSONUtil;
 import com.liu.yuojcodesandbox.core.java.CodeSandboxFactory;
 import com.liu.yuojcodesandbox.core.java.CodeSandboxTemplate;
 import com.liu.yuojcodesandbox.model.ExecuteCodeRequest;
@@ -27,7 +28,7 @@ public class JavaNativeCodesandboxTest {
           .build();
   CodeSandboxTemplate codeSandboxTemplate = CodeSandboxFactory.getInstance(codeRequest.getLanguage());
   ExecuteCodeResponse executeCodeResponse = codeSandboxTemplate.executeCode(codeRequest);
-  System.out.println(executeCodeResponse);
+  System.out.println (JSONUtil.toJsonStr (executeCodeResponse));
 
  }
 

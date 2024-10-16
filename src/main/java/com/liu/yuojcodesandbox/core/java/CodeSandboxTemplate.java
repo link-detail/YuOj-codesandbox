@@ -34,7 +34,7 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
 
 
     //限制执行时间
-    public static final Long TIME_OUT = 5000L;  //5s
+    public static final Long TIME_OUT = 5000L;
 
     //保存代码方法
     public File saveCodeFile(String code) {
@@ -49,9 +49,8 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
         String userCodePath = userParentPath +prefix+ File.separator + UUID.randomUUID();
         //将代码写入指定位置
         String codePath = userCodePath + globalCodeFileName;
-        File codeFile = FileUtil.writeString(code, codePath, StandardCharsets.UTF_8);
-        return codeFile;
-    }
+        return FileUtil.writeString(code, codePath, StandardCharsets.UTF_8);
+     }
 
     /**
      * 获取编译/运行代码命令方法
@@ -67,15 +66,15 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
     }
 
     //执行代码
-    public List<ExecuteMessage> runCode(List<String> inputList, String runCmd) {
+    public List<ExecuteMessage> runCode(List<String> inputList, String runCmd) throws IOException {
         List<ExecuteMessage> executeMessages = new LinkedList<>();  //存储信息
         for (String inputArgs : inputList) {
-
+            Process runProcess;
+            Thread computeTimeThread;
             try {
-                Process runProcess = Runtime.getRuntime().exec(runCmd);
+                runProcess = Runtime.getRuntime().exec(runCmd);
                 //判断是否超时
-                Thread computeTimeThread = new Thread(() -> {
-
+                 computeTimeThread = new Thread(() -> {
                     try {
                         Thread.sleep(TIME_OUT);
                         //如果规定时间还没有结束
@@ -88,8 +87,8 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
                                         .errorMessage("超时")
                                         .time(TIME_OUT)
                                         .exitValue(-10001)
-                                        .build()
-                        );
+                                        .build());
+
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -101,10 +100,10 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
                 stopWatch.start();
                 ExecuteMessage executeMessage = ProcessUtil.handleProcessInteraction(runProcess, inputArgs, "运行");
                 stopWatch.stop();
-                computeTimeThread.stop();//关闭超时监控线程
+                computeTimeThread.stop ();
                 executeMessage.setTime(stopWatch.getLastTaskTimeMillis());
                 executeMessages.add(executeMessage);
-            } catch (IOException e) {
+            } catch (RuntimeException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -186,7 +185,7 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
                 executeCodeResponse.setOutputList(outputList);
                 FileUtil.del(userParentPath);
                 return executeCodeResponse;
-        }catch (RuntimeException e){
+        }catch (Exception e){
             FileUtil.del(userParentPath);
             return getErrorResponse(e);
         }

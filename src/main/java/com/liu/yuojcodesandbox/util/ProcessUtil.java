@@ -34,7 +34,7 @@ public class ProcessUtil {
                 log.info(optName+"成功!");
             }else {  //异常运行
                 //获取控制台的错误信息输出
-                log.error(optName + "失败，错误码{}", exitValue);
+                log.error(optName + "失败，错误码:{}", exitValue);
                 //获取错误信息输出
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 errorPut = new StringBuilder();
@@ -72,7 +72,9 @@ public class ProcessUtil {
     public static ExecuteMessage handleProcessInteraction(Process process,String input,String optName){
         OutputStream outputStream = process.getOutputStream();
         try {
-            outputStream.write((input+"\n").getBytes());  //控制台输入
+            //todo 这个是怎么实现的
+            byte[] bytes = (input+"\n").getBytes ();
+            outputStream.write(bytes);  //控制台输入
             outputStream.flush();  //控制台按下回车键
             outputStream.close();
             return handleProcessMessage(process,optName);
