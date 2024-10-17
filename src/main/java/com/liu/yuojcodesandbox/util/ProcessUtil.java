@@ -72,9 +72,14 @@ public class ProcessUtil {
     public static ExecuteMessage handleProcessInteraction(Process process,String input,String optName){
         OutputStream outputStream = process.getOutputStream();
         try {
-            //todo 这个是怎么实现的
-            byte[] bytes = (input+"\n").getBytes ();
-            outputStream.write(bytes);  //控制台输入
+            /**
+             * 基本方法拼接成1\n2\n
+             * String[] s = input.split (" ");
+             * String s1 = StrUtil.join ("\n", s) + "\n";
+             * outputStream.write(s1.getBytes ())
+             * 下面这种写法，程序会根据其设计和预期来在控制台输入
+             */
+            outputStream.write((input+"\n").getBytes ());  //控制台输入
             outputStream.flush();  //控制台按下回车键
             outputStream.close();
             return handleProcessMessage(process,optName);
