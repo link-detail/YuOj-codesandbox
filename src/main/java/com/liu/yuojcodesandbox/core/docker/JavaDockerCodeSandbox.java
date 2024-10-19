@@ -3,6 +3,7 @@ package com.liu.yuojcodesandbox.core.docker;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.*;
@@ -20,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
     public static final String GLOBAL_CODE_DIR_PATH=File.separator+"tempCode";
 
     //统一类名
-    public static final String GLOBAL_JAVA_CLASS_NAME=File.separator+"Main2.java";
+    public static final String GLOBAL_JAVA_CLASS_NAME=File.separator+"Main.java";
 
     //超时时间 S
     public static final long TIME_OUT=5L;
@@ -67,7 +67,7 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
         List<String> inputList = executeCodeRequest.getInputList ();
         String code = executeCodeRequest.getCode ();
 
-        //1.存放用户代码
+        //1.保存用户代码
         String globalCodePath = System.getProperty ("user.dir") + GLOBAL_CODE_DIR_PATH;
         if (!FileUtil.exist (globalCodePath)){
             FileUtil.mkdir (globalCodePath);
@@ -90,12 +90,14 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
             return getErrorResponse (e);
         }
 
-        //执行代码
+        //3.执行代码
         String imageName = LanguageImageEnum.JAVA11.getImage ();
         ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse ();
         //默认是成功的
         executeCodeResponse.setResultType(JudgeInfoMessageEnum.ACCEPTED);
         executeCodeResponse.setStatus(1);
+
+        //第一次拉取镜像
         if (FIRST_PULL){
             try {
                 dockerDao.pullImage (imageName);
@@ -109,8 +111,8 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
         HostConfig config = new HostConfig ();
         config.withMemorySwap (0L); //没有交互空间
         config.withCpuCount (1L); //cpu数量
-        config.withMemory (100*1000*1000L); //容器内存
-        config.setBinds (new Bind (userCodeParentPath,new Volume ("/app")));  //目录挂载
+        config.withMemory (100*1000*1000L); //容器内存 100MB
+        config.setBinds (new Bind (userCodeParentPath,new Volume ("/app")));  //容器内部目录挂载
         //创建容器
         CreateContainerResponse containerResponse = dockerDao.createContainer (imageName, config);
         String containerId = containerResponse.getId ();
@@ -131,11 +133,16 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
 //            String[] cmd=new String[]{"java", "-Dfile.encoding=utf-8", "-cp", "/app", "Main"};
             //创建容器执行命令
             String execId = dockerDao.executeCreateCmd(containerId, cmd).getId ();
-            ByteArrayOutputStream resultStream = new ByteArrayOutputStream (); //记录正常输出信息
-            ByteArrayOutputStream errorResultStream = new ByteArrayOutputStream (); //记录错误输出信息
+//            ByteArrayOutputStream resultStream = new ByteArrayOutputStream (); //记录正常输出信息
+//            ByteArrayOutputStream errorResultStream = new ByteArrayOutputStream (); //记录错误输出信息
+            StringBuilder resultBuilder = new StringBuilder();
+            StringBuilder errorBuilder = new StringBuilder();
             //执行启动命令行回调函数
             ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback () {
 
+                /**
+                 * 执行完毕之后都会走这个方法
+                 */
                 @Override
                 public void onComplete() {
                     timeout[0]=false;
@@ -149,14 +156,14 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
                     byte[] payload = frame.getPayload ();  //输出信息
                     if (StreamType.STDERR.equals (streamType)){
                         try {
-                            errorResultStream.write (payload);
-                        } catch (IOException e) {
+                            errorBuilder.append (new String(payload));
+                        } catch (Exception e) {
                             throw new RuntimeException (e);
                         }
                     }else {
                         try {
-                            resultStream.write (payload);
-                        } catch (IOException e) {
+                            resultBuilder.append (new String(payload));
+                        } catch (Exception e) {
                             throw new RuntimeException (e);
                         }
                     }
@@ -203,6 +210,7 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
             try(ResultCallback<Statistics> ignored = dockerDao.getStats (containerId,resultCallback)) {
                 StopWatch stopWatch = new StopWatch ();
                 stopWatch.start ();
+//                向容器内输入数据（由于docker内部的保护机制，不允许向容器内输入数据）
 //                dockerDao.executeStart (execId, IoUtil.toStream(s+"\n",StandardCharsets.UTF_8),execStartResultCallback);
                 /**
                  *  虽然限制了执行时间，但是不管是超时还是不超时，都会继续往下走的，不会报错
@@ -211,29 +219,36 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
                 dockerDao.executeStart(execId,execStartResultCallback,TIME_OUT, TimeUnit.SECONDS);
                 stopWatch.stop ();
                 maxTime = Math.max (maxTime, stopWatch.getLastTaskTimeMillis ());
-                if (resultStream.size () != 0) {
-                    log.info ("正常输出:{}", resultStream);
+                if (StrUtil.isNotBlank(resultBuilder)) {
+                    log.info ("正常输出:{}", resultBuilder);
                 }
-                if (errorResultStream.size () != 0) {
-                    log.info ("错误输出:{}", errorResultStream);
+                if (StrUtil.isNotBlank(errorBuilder)) {
+                    log.info ("错误输出:{}", errorBuilder);
                     executeCodeResponse.setStatus(3);
-                    executeCodeResponse.setMessage(errorResultStream.toString());
+                    executeCodeResponse.setMessage(errorBuilder.toString());
                     executeCodeResponse.setResultType(JudgeInfoMessageEnum.RUNTIME_ERROR);
                     break;
                 }
-                outPutList.add (resultStream.toString ());
+                outPutList.add (resultBuilder.toString().replace("\n",""));
 
             }catch (IOException e){
-                log.error ("执行失败",e);
+                //删除源文件
+                FileUtil.del (userCodeParentPath);
+                return getErrorResponse(e);
             }
             log.info ("是否超时:{}",timeout[0]);
         }
 
         if (timeout[0]){
+            FileUtil.del (userCodeParentPath);
             executeCodeResponse.setOutputList(new ArrayList<>());
             executeCodeResponse.setStatus(2);
             executeCodeResponse.setMessage(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED.getText());
             executeCodeResponse.setResultType(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED);
+            JudgeInfo updateJudgeinfo =new JudgeInfo();
+            updateJudgeinfo.setTime(TIME_OUT);
+            executeCodeResponse.setJudgeInfo(updateJudgeinfo);
+            return executeCodeResponse;
         }
         //删除执行代码文件
         FileUtil.del (userCodeParentPath);
@@ -241,9 +256,9 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
         judgeInfo.setTime (maxTime);
         judgeInfo.setMemory (maxMemory[0]);
         executeCodeResponse.setJudgeInfo (judgeInfo);
-//        executeCodeResponse.setStatus (1);
+        executeCodeResponse.setStatus (1);
         executeCodeResponse.setOutputList (outPutList);
-//        executeCodeResponse.setResultType (JudgeInfoMessageEnum.ACCEPTED);
+        executeCodeResponse.setResultType (JudgeInfoMessageEnum.ACCEPTED);
 
         //删除容器
         dockerDao.deleteContainer(containerId);

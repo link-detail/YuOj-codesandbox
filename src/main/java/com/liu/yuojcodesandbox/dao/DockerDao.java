@@ -30,7 +30,6 @@ public class DockerDao {
     @Resource
     private DockerClient dockerClient;
 
-
     /**
      * 拉取镜像
      * @param imageName 镜像名字
@@ -50,6 +49,7 @@ public class DockerDao {
         }) {
             pullImageCmd.
                     exec (pullImageResultCallback)
+                    //等待结束之后继续往下进行
                     .awaitCompletion ();
            log.info ("{}镜像拉取成功",imageName);
         }catch (Exception e){
@@ -68,8 +68,8 @@ public class DockerDao {
     public CreateContainerResponse createContainer(String imageName, HostConfig config){
         return dockerClient.createContainerCmd (imageName)
                 .withTty (true) //允许用户和容器交互式输入输出
-                .withNetworkDisabled (true) //容器内网络不互通
-                .withAttachStderr (true) //允许你获取容器内的错误输出
+                .withNetworkDisabled (false) //容器和宿主机网络不可通
+                .withAttachStderr (true)//允许你获取容器内的错误输出
                 .withAttachStdin (true) //允许容器输出
                 .withAttachStdout (true) //允许获取容器内的正常输出
                 .withReadonlyRootfs(true) //容器的根文件系统设置为只读，防止容器内运行的进程修改文件系统
@@ -97,7 +97,8 @@ public class DockerDao {
                 .withAttachStdin (true)
                 .withAttachStderr (true)
                 .withAttachStdout (true)
-//                .withTty(true)  设置这个属性之后 容器内输出的信息类型都是STDOUT
+                //设置这个属性true之后，输出流都被合并了，不在区分标准输出流和正常输出流
+                .withTty(false)
                 .withCmd (cmd)
                 .exec ();
     }
@@ -113,7 +114,7 @@ public class DockerDao {
             dockerClient
                     .execStartCmd (execId)
                     .withDetach (false)
-                    .withTty (true)
+                    .withTty (false)
                     .withStdIn (inputStream)
                     .exec (execStartResultCallback)
                     .awaitCompletion ();
@@ -152,12 +153,15 @@ public class DockerDao {
      * @param execStartResultCallback 回调函数
      * @param timeOut 超时时间
      * @param timeUnit 时间单位
+     *
      */
     public void executeStart(String execId, ExecStartResultCallback execStartResultCallback,
                              long timeOut, TimeUnit timeUnit){
         try {
             dockerClient
                     .execStartCmd (execId)
+                    //非分离模式，表示容器的执行会阻塞当前线程，等待容器内的执行结果
+                    .withDetach(false)
                     .exec (execStartResultCallback)
                     .awaitCompletion (timeOut,timeUnit);
         } catch (InterruptedException e) {
