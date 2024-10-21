@@ -84,7 +84,11 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
             Process compileProcess = Runtime.getRuntime ().exec (compileCmd);
             ExecuteMessage executeMessage = ProcessUtil.handleProcessMessage(compileProcess, "编译");
             if (executeMessage.getExitValue()!=0){
-                return getErrorResponse(new RuntimeException("编译失败!"));
+                return ExecuteCodeResponse.builder()
+                        .status(2)
+                        .message(JudgeInfoMessageEnum.COMPILE_ERROR.getText())
+                        .resultType(JudgeInfoMessageEnum.COMPILE_ERROR)
+                        .build();
             }
         } catch (IOException e) {
             return getErrorResponse (e);
@@ -103,11 +107,12 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
                 dockerDao.pullImage (imageName);
                 FIRST_PULL=false;
             }catch (Exception e){
-                throw new RuntimeException (e);
+                throw new RuntimeException ("拉取镜像失败!");
             }
         }
 
         //容器配置
+        //解决了内存限制的问题，不需要原生代码沙箱那样繁琐
         HostConfig config = new HostConfig ();
         config.withMemorySwap (0L); //没有交互空间
         config.withCpuCount (1L); //cpu数量
@@ -239,26 +244,13 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
             log.info ("是否超时:{}",timeout[0]);
         }
 
-        if (timeout[0]){
-            FileUtil.del (userCodeParentPath);
-            executeCodeResponse.setOutputList(new ArrayList<>());
-            executeCodeResponse.setStatus(2);
-            executeCodeResponse.setMessage(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED.getText());
-            executeCodeResponse.setResultType(JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED);
-            JudgeInfo updateJudgeinfo =new JudgeInfo();
-            updateJudgeinfo.setTime(TIME_OUT);
-            executeCodeResponse.setJudgeInfo(updateJudgeinfo);
-            return executeCodeResponse;
-        }
         //删除执行代码文件
         FileUtil.del (userCodeParentPath);
         JudgeInfo judgeInfo = new JudgeInfo ();
         judgeInfo.setTime (maxTime);
         judgeInfo.setMemory (maxMemory[0]);
         executeCodeResponse.setJudgeInfo (judgeInfo);
-        executeCodeResponse.setStatus (1);
         executeCodeResponse.setOutputList (outPutList);
-        executeCodeResponse.setResultType (JudgeInfoMessageEnum.ACCEPTED);
 
         //删除容器
         dockerDao.deleteContainer(containerId);
