@@ -1,6 +1,8 @@
 package com.liu.yuojcodesandbox.core.java;
 
 import com.liu.yuojcodesandbox.model.CodeSandboxCmd;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 
@@ -9,6 +11,9 @@ import java.io.File;
  * @since 2024/8/11 下午9:29
  * java原生代码沙箱
  */
+
+@Service
+@Slf4j
 public class JavaNativeCodeSandbox extends CodeSandboxTemplate {
     String prefix= File.separator+"java";
 

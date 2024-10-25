@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2024-08-28 22:21
  * docker沙箱
  */
-@Service
+//@Service
 @Slf4j
 public class JavaDockerCodeSandbox implements CodeSandbox {
 
@@ -235,6 +235,7 @@ public class JavaDockerCodeSandbox implements CodeSandbox {
                     break;
                 }
                 outPutList.add (resultBuilder.toString().replace("\n",""));
+
 
             }catch (IOException e){
                 //删除源文件

@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * @author 刘渠好
  * @since 2024/8/11 下午9:30
- * java原生代码沙箱模板
+ * java原生代码沙箱模板（设计模式-模板模式）
  */
 @Slf4j
 public abstract class CodeSandboxTemplate implements CodeSandbox {
@@ -184,6 +184,7 @@ public abstract class CodeSandboxTemplate implements CodeSandbox {
                 judgeInfo.setTime(maxTime);
                 executeCodeResponse.setOutputList(outputList);
                 FileUtil.del(userParentPath);
+                log.info ("执行响应内容:{}",executeCodeResponse);
                 return executeCodeResponse;
         }catch (Exception e){
             FileUtil.del(userParentPath);

@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2024-08-28 21:22
  * docker基本操作
  */
-@Repository
+//@Repository
 @Slf4j
 public class DockerDao {
 

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2024-08-28 21:27
  * docker客户端配置
  */
-@Configuration
+//@Configuration
 @Slf4j
 public class DockerClientConfig {
 
