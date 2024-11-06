@@ -18,7 +18,6 @@ import com.liu.yuojcodesandbox.model.enums.JudgeInfoMessageEnum;
 import com.liu.yuojcodesandbox.model.enums.LanguageImageEnum;
 import com.liu.yuojcodesandbox.util.ProcessUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.Closeable;
