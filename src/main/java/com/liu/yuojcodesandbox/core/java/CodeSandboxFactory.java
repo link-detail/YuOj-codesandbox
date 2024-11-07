@@ -1,7 +1,6 @@
 package com.liu.yuojcodesandbox.core.java;
 
 import com.liu.yuojcodesandbox.model.enums.QuestionSubmitLanguageEnum;
-import org.springframework.stereotype.Service;
 
 
 /**
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
  *
  */
 
-@Service
 public class CodeSandboxFactory {
 
     public static CodeSandboxTemplate getInstance(QuestionSubmitLanguageEnum language){

@@ -1,10 +1,8 @@
 package com.liu.yuojcodesandbox.controller;
 
-import com.liu.yuojcodesandbox.core.java.CodeSandboxFactory;
-import com.liu.yuojcodesandbox.core.java.CodeSandboxTemplate;
+import com.liu.yuojcodesandbox.core.java.JavaNativeCodeSandbox;
 import com.liu.yuojcodesandbox.model.ExecuteCodeRequest;
 import com.liu.yuojcodesandbox.model.ExecuteCodeResponse;
-import com.liu.yuojcodesandbox.model.enums.QuestionSubmitLanguageEnum;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,14 +23,12 @@ public class CodeSandboxController {
 
     public static final String AUTH_REQUEST_SECRET = "secretKey";
 
-
-
     /**
      *     @Resource
      *     private JavaNativeCodeSandbox nativeCodeSandbox;
      */
     @Resource
-    private CodeSandboxFactory codeSandboxFactory;
+    private JavaNativeCodeSandbox nativeCodeSandbox;
     /**
      *  执行代码沙箱请求
      * @param executeCodeRequest @RequestBody：以json的方式去传输参数
@@ -52,7 +48,6 @@ public class CodeSandboxController {
             response.setStatus (403);
             return null;
         }
-        CodeSandboxTemplate nativeCodeSandbox = codeSandboxFactory.getInstance (QuestionSubmitLanguageEnum.JAVA);
         return nativeCodeSandbox.executeCode (executeCodeRequest);
 
     }
